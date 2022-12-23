@@ -59,7 +59,6 @@ contact: 'eric@i-comse.org'
 
 # Order of episodes in your lesson
 episodes: 
-- introduction.Rmd
 - lj1.Rmd
 - lj2.Rmd
 
