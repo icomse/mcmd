@@ -6,7 +6,7 @@ exercises: 2
 
 :::::::::::::::::::::::::::::::::::::: questions 
 
-- How can I 'turn on' hoomd and run a simulation?
+- How can I turn on hoomd and run a simulation?
 
 ::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -48,29 +48,12 @@ In our first simulation example we're going to:
 1. Visualize the last snapshot.
 
 
-::::::::::::::::::::::::::::::::::::: challenge 
-
-## Challenge 1: Can you do it?
-
-What is the output of this command?
-
-```r
-paste("This", "new", "lesson", "looks", "good")
-```
-
-:::::::::::::::::::::::: solution 
-
-## Output
- 
-```output
-[1] "This new lesson looks good"
-```
-
-:::::::::::::::::::::::::::::::::
-
-
-
 And text
+
+
+```python
+import hoomd
+```
 
 
 ::::::::::::::::::::::::::::::::::::: keypoints 
