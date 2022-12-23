@@ -10,6 +10,7 @@ exercises: 2
 
 ::::::::::::::::::::::::::::::::::::::::::::::::
 
+
 ::::::::::::::::::::::::::::::::::::: objectives
 
 - Turn on the simulation software
@@ -46,13 +47,6 @@ In our first simulation example we're going to:
 1. Step forward 10000 steps.
 1. Visualize the last snapshot.
 
-
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: instructor
-
-Inline instructor notes can help inform instructors of timing challenges
-associated with the lessons. They appear in the "Instructor View"
-
-::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 ::::::::::::::::::::::::::::::::::::: challenge 
 
