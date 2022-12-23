@@ -291,18 +291,18 @@ any links that you are not going to use.
  --></tbody></table><p>
       The actual schedule may vary slightly depending on the topics and exercises chosen by the instructor.
       </p>
-      </section><section id="setup"><p>Setup instructions live in this document. Please specify the tools
-and the data sets the Learner needs to have installed.</p>
-<p>There are three possible ways to engage with these tutorial
-materials: 1. Install the required dependencies locally (Caveats: This
-can be frustrating if you are still learning system administration and
-software dependency skills, and for larger simulations you will be
-limited by your local machine’s hardware) 1. Use a container on your
-local machine (Caveat: This is a large download, requires setting up a
-virtual machine, and you will be limited by your local machine’s
-hardware) 1. Use a container on a compute cluster (Caveat: This may
-requires your cluster’s sysadmins to set up the container)</p>
-<section id="data-sets"><h2 class="section-heading">Data Sets<a class="anchor" aria-label="anchor" href="#data-sets"></a>
+      </section><section id="setup"><p>There are three possible ways to engage with these tutorial
+materials:</p>
+<ol style="list-style-type: decimal"><li>Install the required dependencies locally (Caveats: This can be
+frustrating if you are still learning system administration and software
+dependency skills, and for larger simulations you will be limited by
+your local machine’s hardware)</li>
+<li>Use a container on your local machine (Caveat: This is a large
+download, requires setting up a virtual machine, and you will be limited
+by your local machine’s hardware)</li>
+<li>Use a container on a compute cluster (Caveat: This may requires your
+cluster’s sysadmins to set up the container)</li>
+</ol><section id="data-sets"><h2 class="section-heading">Data Sets<a class="anchor" aria-label="anchor" href="#data-sets"></a>
 </h2>
 <hr class="half-width"><p>Let’s add the random.gsd file to the repository so it needn’t be
 generated for the first exercise. Add a link to data directory.</p>
@@ -312,16 +312,19 @@ generated for the first exercise. Add a link to data directory.</p>
 <div class="callout-square">
 <i class="callout-icon" data-feather="message-circle"></i>
 </div>
-<div class="callout-inner">
-<div class="section level3 callout-title">
-<h3 class="callout-title" id="local-env-install">Local env install<a class="anchor" aria-label="anchor" href="#local-env-install"></a></h3>
-</div>
+<div id="local-env-install" class="callout-inner">
+<h3 class="callout-title">Local env install<a class="anchor" aria-label="anchor" href="#discussion1"></a>
+</h3>
 <div class="callout-content">
+<p>TODO: Instructions for using conda/mamba</p>
 <div class="section level3">
 <h3 id="local-container">Local container<a class="anchor" aria-label="anchor" href="#local-container"></a></h3>
+<p>TODO: instructions for the docker image</p>
 </div>
 <div class="section level3">
 <h3 id="cluster-container">Cluster container<a class="anchor" aria-label="anchor" href="#cluster-container"></a></h3>
+<p>TODO: instructions for the docker image on a cluster with
+singularity</p>
 </div>
 </div>
 </div>
@@ -333,7 +336,7 @@ generated for the first exercise. Add a link to data directory.</p>
   Windows
   </h4>
 </button>
-<div id="collapseSolution1" class="accordion-collapse collapse" aria-labelledby="headingSolution1" data-bs-parent="#accordionSolution1">
+<div id="collapseSolution1" class="accordion-collapse collapse" data-bs-parent="#accordionSolution1" aria-labelledby="headingSolution1">
 <div class="accordion-body">
 <p>TODO: Set up wsl</p>
 </div>
@@ -347,7 +350,7 @@ generated for the first exercise. Add a link to data directory.</p>
   MacOS
   </h4>
 </button>
-<div id="collapseSolution2" class="accordion-collapse collapse" aria-labelledby="headingSolution2" data-bs-parent="#accordionSolution2">
+<div id="collapseSolution2" class="accordion-collapse collapse" data-bs-parent="#accordionSolution2" aria-labelledby="headingSolution2">
 <div class="accordion-body">
 <p>TODO: miniconda envs</p>
 </div>
@@ -361,7 +364,7 @@ generated for the first exercise. Add a link to data directory.</p>
   Containers
   </h4>
 </button>
-<div id="collapseSolution3" class="accordion-collapse collapse" aria-labelledby="headingSolution3" data-bs-parent="#accordionSolution3">
+<div id="collapseSolution3" class="accordion-collapse collapse" data-bs-parent="#accordionSolution3" aria-labelledby="headingSolution3">
 <div class="accordion-body">
 <p>TODO: Docker image</p>
 </div>
