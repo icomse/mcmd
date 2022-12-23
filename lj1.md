@@ -31,6 +31,7 @@ As we do, we'll be *fading in* more complexity.
 
 
 At it's core, running a molecular simulation consists of 5 parts:
+
 1. "Turning on" the simulation software
 1. Creating an initial configuration 
 1. Define the rules of our model
@@ -40,6 +41,7 @@ At it's core, running a molecular simulation consists of 5 parts:
 These steps are not always performed sequentially, but they're always there.
 
 In our first simulation example we're going to:
+
 1. Turn on hoomd-blue, a simulation engine that works nicely in python
 1. Load in a configuration of randomly-packed spheres that has been created for us
 1. Define Lennard-Jones interaction rules and an NVT ensemble
