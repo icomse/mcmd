@@ -5,20 +5,28 @@ title: Setup
 Setup instructions live in this document. Please specify the tools and the data
 sets the Learner needs to have installed.
 
+There are three possible ways to engage with these tutorial materials:
+1. Install the required dependencies locally (Caveats: This can be frustrating if you are still learning system administration and software dependency skills, and for larger simulations you will be limited by your local machine's hardware)
+1. Use a container on your local machine (Caveat: This is a large download, requires setting up a virtual machine, and you will be limited by your local machine's hardware)
+1. Use a container on a compute cluster (Caveat: This may requires your cluster's sysadmins to set up the container)
+
 ## Data Sets
 
-Download the [data zip file](data/data.zip) and unzip it to your Desktop
+
+Let's add the random.gsd file to the repository so it needn't be generated for the first exercise.
+Add a link to data directory.
 
 ## Software Setup
 
 ::::::::::::::::::::::::::::::::::::::: discussion
 
-### Details
+### Local env install 
 
-Setup for different systems can be presented in dropdown menus via a `solution`
-tag. They will join to this discussion block, so you can give a general overview
-of the software used in this lesson here and fill out the individual operating
-systems (and potentially add more, e.g. online setup) in the solutions blocks.
+
+### Local container
+
+
+### Cluster container
 
 :::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -26,7 +34,7 @@ systems (and potentially add more, e.g. online setup) in the solutions blocks.
 
 ### Windows
 
-Use PuTTY
+TODO: Set up wsl
 
 :::::::::::::::::::::::::
 
@@ -34,16 +42,16 @@ Use PuTTY
 
 ### MacOS
 
-Use Terminal.app
+TODO: miniconda envs
 
 :::::::::::::::::::::::::
 
 
 :::::::::::::::: solution
 
-### Linux
+### Containers
 
-Use Terminal
+TODO: Docker image
 
 :::::::::::::::::::::::::
 
