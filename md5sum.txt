@@ -10,5 +10,6 @@
 "episodes/lj4.Rmd" "3b5679b13f96a6dcee51845ec9de3c6f" "site/built/lj4.md" "2022-12-23"
 "instructors/instructor-notes.md" "60b93493cf1da06dfd63255d73854461" "site/built/instructor-notes.md" "2022-12-06"
 "learners/setup.md" "f137ece7ef7f9648de24b4593b778396" "site/built/setup.md" "2022-12-23"
-"profiles/learner-profiles.md" "6a959aee1178fdba87c11e0944101b53" "site/built/learner-profiles.md" "2022-12-23"
+"profiles/carl.md" "127ebe93eccf97d5aca98ad6bfe897dc" "site/built/carl.md" "2022-12-23"
+"profiles/sue.md" "68e8be30f8c627bb545887637e462157" "site/built/sue.md" "2022-12-23"
 "renv/profiles/lesson-requirements/renv.lock" "54217c1b4af46a849129dbcf4fde5d5a" "site/built/renv.lock" "2022-12-06"
