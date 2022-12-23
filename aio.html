@@ -320,18 +320,30 @@
 simulation techniques, starting with MD simulations and moving to MC
 simulations.</p>
 <p>As we do, we’ll be <em>fading in</em> more complexity.</p>
-<p>At it’s core, running a molecular simulation consists of 5 parts: 1.
-“Turning on” the simulation software 1. Creating an initial
-configuration 1. Define the rules of our model 1. Performing a number of
-“steps” forward in time 1. Analyzing the simulation data</p>
+<p>At it’s core, running a molecular simulation consists of 5 parts:</p>
+<ol style="list-style-type: decimal">
+<li>“Turning on” the simulation software</li>
+<li>Creating an initial configuration</li>
+<li>Define the rules of our model</li>
+<li>Performing a number of “steps” forward in time</li>
+<li>Analyzing the simulation data</li>
+</ol>
 <p>These steps are not always performed sequentially, but they’re always
 there.</p>
-<p>In our first simulation example we’re going to: 1. Turn on
-hoomd-blue, a simulation engine that works nicely in python 1. Load in a
-configuration of randomly-packed spheres that has been created for us 1.
-Define Lennard-Jones interaction rules and an NVT ensemble 1. Bonus:
-We’re going to set the initial velocities, too 1. Step forward 10000
-steps. 1. Visualize the last snapshot.</p>
+<p>In our first simulation example we’re going to:</p>
+<ol style="list-style-type: decimal">
+<li>Turn on hoomd-blue, a simulation engine that works nicely in
+python</li>
+<li>Load in a configuration of randomly-packed spheres that has been
+created for us</li>
+<li>Define Lennard-Jones interaction rules and an NVT ensemble
+<ol style="list-style-type: decimal">
+<li>Bonus: We’re going to set the initial velocities, too</li>
+</ol>
+</li>
+<li>Step forward 10000 steps.</li>
+<li>Visualize the last snapshot.</li>
+</ol>
 <p>And text</p>
 <div class="codewrapper sourceCode" id="cb1">
 <h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
