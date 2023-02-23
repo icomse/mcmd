@@ -126,6 +126,8 @@ view.addBox({'center': {'x': 0, 'y': 0, 'z': 0},
             )
 ```
 
+![Final frame of a Lennard-Jones simulation](fig/final_lj_frame.png "Final frame of a Lennard-Jones simulation")
+
 ::::::::::::::::::::::::::::::::::::: keypoints 
 
 - hoomd can run simulations entirely within a python interface
