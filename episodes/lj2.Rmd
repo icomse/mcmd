@@ -26,20 +26,20 @@ OK, now that we've run our first simulations, let's add in a bit more complexity
 
 Last time we did this:
 
-    1. Turn on hoomd-blue, a simulation engine that works nicely in python
-    1. Load in a configuration of randomly-packed spheres that has been created for us
-    1. Define Lennard-Jones interaction rules and an NVT ensemble
-    1. Step forward 10000 steps.
-    1. Visualize the last snapshot.
+1. Turn on hoomd-blue, a simulation engine that works nicely in python
+1. Load in a configuration of randomly-packed spheres that has been created for us
+1. Define Lennard-Jones interaction rules and an NVT ensemble
+1. Step forward 10000 steps
+1. Visualize the last snapshot
 
-This time we're going to :
+This time we're going to:
 
-    1. Turn on hoomd-blue, a simulation engine that works nicely in python
-    1. Load in a configuration of randomly-packed spheres that has been created for us
-    1. Define Lennard-Jones interaction rules and an NVT ensemble
-    1. NEW: Set up a logger that will save simulation information we can use.
-    1. Step forward 10000 steps.
-    1. NEW: Plot kinetic temperature
+1. Turn on hoomd-blue
+1. Load in a configuration of randomly-packed spheres that has been created for us
+1. Define Lennard-Jones interaction rules and an NVT ensemble
+1. NEW: Set up a logger that will save simulation information we can use
+1. Step forward 10000 steps
+1. NEW: Plot kinetic temperature
 
 We'll start with the same process we did last time, loading up a system and setting up the simulation.
 
@@ -143,9 +143,10 @@ plt.ylabel(y)
 plt.show()
 ```
 
-![image of temperature vs time plot](fig/temperature_plot.png "Plot of thermodynamic temperature over time.")
+![](fig/temperature_plot.png "Plot of thermodynamic temperature over time."){alt="Plot of thermodynamic
+temperature over time, showing oscillation about the average value of 1.5"}
 
-:::::::::::::::::::::::::: activities
+:::::::::::::::::::::::::: challenge
 
 - Compare kinetic temperature with setpoint temperature
 - Check kinetic temperature right for n_dof
