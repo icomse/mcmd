@@ -22,7 +22,7 @@ exercises: 2
 
 
 
-OK, now that we've run our first simulations, let's add in a bit more complexity.
+OK, now that we have run our first simulations, let us add in a bit more complexity.
 
 Last time we did this:
 
@@ -32,7 +32,7 @@ Last time we did this:
 1. Step forward 10000 steps
 1. Visualize the last snapshot
 
-This time we're going to:
+This time we are going to:
 
 1. Turn on hoomd-blue
 1. Load in a configuration of randomly-packed spheres that has been created for us
@@ -41,7 +41,7 @@ This time we're going to:
 1. Step forward 10000 steps
 1. NEW: Plot kinetic temperature
 
-We'll start with the same process we did last time, loading up a system and setting up the simulation.
+We will start with the same process we did last time, loading up a system and setting up the simulation.
 
 ```python
 import hoomd
@@ -68,16 +68,16 @@ sim.operations.integrator = integrator
 sim.state.thermalize_particle_momenta(filter=hoomd.filter.All(), kT=1.5)
 ```
 
-Now that our system is ready to roll, let's tell HOOMD about the quantities we want it to keep track of for us.
-HOOMD-blue has a convenient built-in function for common thermodynamic values, and we'll also keep track of how
+Now that our system is ready to roll, let us tell HOOMD about the quantities we want it to keep track of for us.
+HOOMD-blue has a convenient built-in function for common thermodynamic values, and we will also keep track of how
 long the simulation has been running, in terms of time steps and also "wall time", i.e. real-life seconds it
 takes the computer to run our simulation.
 
 ```python
 #NEW logger
-# We need to define which atoms participate in logging, what's logged, and where to store that info.
+# We need to define which atoms participate in logging, what is logged, and where to store that info.
 selection = hoomd.filter.All() # "which atoms"
-logger = hoomd.logging.Logger() # will be used for "what's logged"
+logger = hoomd.logging.Logger() # will be used for "what is logged"
 trajfile = 'traj2.gsd'
 writer = hoomd.write.GSD(filename=trajfile, # "where to store"
                              trigger=hoomd.trigger.Periodic(100), #when to store
@@ -87,13 +87,13 @@ writer = hoomd.write.GSD(filename=trajfile, # "where to store"
 thermo_props = hoomd.md.compute.ThermodynamicQuantities(filter=selection) # What to store
 logger.add(thermo_props)
 logger.add(sim,quantities=['timestep','walltime','tps'])
-writer.log = logger #need to tell our write which logger to use when it's logging info
+writer.log = logger #need to tell our write which logger to use when it is logging info
 
 sim.operations.computes.append(thermo_props) #tell our simulation to *compute* the thermo properties
 sim.operations.writers.append(writer) # tell our simulation which writer(s) to use
 ```
 
-Great! Now we're all set to run and get at the logged quantities. Let's take a look at what we've got
+Great! Now we are all set to run and get at the logged quantities. Let us take a look at what we have got
 to work with first:
 
 ```python
@@ -104,7 +104,7 @@ sim.run(1e4)
 
 # Use the log to analyze properties
 traj = gsd.hoomd.open(trajfile,'rb')
-traj[0].log #let's see what things we can access in the log
+traj[0].log #let us see what things we can access in the log
 ```
 
 You should get output looking something like this:
@@ -129,7 +129,7 @@ You should get output looking something like this:
 ```
 
 Alright, one good sanity test for simulations is to see if our thermostat is behaving reasonably, that
-is, if our temperature oscillates about the chosen average value. Let's plot out our temperature!
+is, if our temperature oscillates about the chosen average value. Let us plot out our temperature!
 
 ```python
 from day1_utils import arrays_from_gsd

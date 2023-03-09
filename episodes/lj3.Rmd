@@ -18,7 +18,7 @@ exercises: 2
 
 ## Plans
 
-We're ready to build on the previous example and learn how to vary thermodynamic parameters
+We are ready to build on the previous example and learn how to vary thermodynamic parameters
 in HOOMD-blue and observe how these changes can affect the behavior of our systems.
 
 Last time we did this:
@@ -35,7 +35,7 @@ This time we are going to:
 1. Turn on hoomd-blue, a simulation engine that works nicely in python
 1. Load in a configuration of randomly-packed spheres that has been created for us
 1. Define Lennard-Jones interaction rules and an **NPT** ensemble
-    a. We're going to vary the integrator parameters and evaluate thermodynamic observables
+    a. We are going to vary the integrator parameters and evaluate thermodynamic observables
 1. Set up a logger that will save simulation information we can use.
 1. Step forward 10,0000 steps.
 1. Analyze output
@@ -77,9 +77,9 @@ sim.state.thermalize_particle_momenta(filter=hoomd.filter.All(), kT=1.5)
 ```python
 
 
-# We need to define which atoms participate in logging, what's logged, and where to store that info.
+# We need to define which atoms participate in logging, what is logged, and where to store that info.
 selection = hoomd.filter.All() # "which atoms"
-logger = hoomd.logging.Logger() # will be used for "what's logged"
+logger = hoomd.logging.Logger() # will be used for "what is logged"
 trajfile = 'traj3.gsd'
 writer = hoomd.write.GSD(filename=trajfile, # "where to store"
                              trigger=hoomd.trigger.Periodic(100), #when to store
@@ -89,7 +89,7 @@ writer = hoomd.write.GSD(filename=trajfile, # "where to store"
 thermo_props = hoomd.md.compute.ThermodynamicQuantities(filter=selection) # What to store
 logger.add(thermo_props)
 logger.add(sim,quantities=['timestep','walltime','tps'])
-writer.log = logger #need to tell our write which logger to use when it's logging info
+writer.log = logger #need to tell our write which logger to use when it is logging info
 
 sim.operations.computes.append(thermo_props) #tell our simulation to *compute* the thermo properties
 sim.operations.writers.append(writer) # tell our simulation which writer(s) to use
@@ -106,7 +106,7 @@ sim.run(1e5)
 
 # Use the log to analyze properties
 traj = gsd.hoomd.open(trajfile,'rb')
-traj[0].log #let's see what things we can access in the log
+traj[0].log #let us see what things we can access in the log
 
 
 ```
