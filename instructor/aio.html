@@ -317,11 +317,11 @@
 <section id="introduction"><h2 class="section-heading">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
 <hr class="half-width">
-<p>This week we’ll be building up your understanding of molecular
+<p>This week we will be building up your understanding of molecular
 simulation techniques, starting with MD simulations and moving to MC
 simulations.</p>
-<p>As we do, we’ll be <em>fading in</em> more complexity.</p>
-<p>At it’s core, running a molecular simulation consists of 5 parts:</p>
+<p>As we do, we will be <em>fading in</em> more complexity.</p>
+<p>At its core, running a molecular simulation consists of 5 parts:</p>
 <ol style="list-style-type: decimal">
 <li>“Turning on” the simulation software</li>
 <li>Creating an initial configuration</li>
@@ -329,9 +329,9 @@ simulations.</p>
 <li>Performing a number of “steps” forward in time</li>
 <li>Analyzing the simulation data</li>
 </ol>
-<p>These steps are not always performed sequentially, but they’re always
-there.</p>
-<p>In our first simulation example we’re going to:</p>
+<p>These steps are not always performed sequentially, but they are
+always there.</p>
+<p>In our first simulation example we are going to:</p>
 <ol style="list-style-type: decimal">
 <li>Turn on hoomd-blue, a simulation engine that works nicely in
 python</li>
@@ -339,19 +339,103 @@ python</li>
 created for us</li>
 <li>Define Lennard-Jones interaction rules and an NVT ensemble
 <ol style="list-style-type: decimal">
-<li>Bonus: We’re going to set the initial velocities, too</li>
+<li>Bonus: We are going to set the initial velocities, too</li>
 </ol>
 </li>
 <li>Step forward 10000 steps.</li>
 <li>Visualize the last snapshot.</li>
 </ol>
-<p>And text</p>
+<div class="section level3">
+<h3 id="getting-started">Getting Started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
+</h3>
+<p>First off, we need to grab the HOOMD-blue python package, then we
+will “turn on” HOOMD by telling it where we want it to run, i.e. on the
+CPU. For our first example, we are going to load a pre-made system
+instead of building it up from scratch, so we can familiarize ourselves
+with the steps to launch a simulation.</p>
 <div class="codewrapper sourceCode" id="cb1">
 <h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
 </h3>
-<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> hoomd</span></code></pre>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> hoomd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Attach to CPU and create simulation</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>cpu <span class="op">=</span> hoomd.device.CPU()</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>sim <span class="op">=</span> hoomd.Simulation(device<span class="op">=</span>cpu, seed<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>sim.create_state_from_gsd(filename<span class="op">=</span><span class="st">'random.gsd'</span>) <span class="co"># N and V are set here</span></span></code></pre>
 </div>
-<div id="keypoints1" class="callout keypoints">
+</div>
+<div class="section level3">
+<h3 id="defining-the-rules-of-our-model">Defining the Rules of Our model<a class="anchor" aria-label="anchor" href="#defining-the-rules-of-our-model"></a>
+</h3>
+<p>Now that we have got a system loaded in, we need to tell HOOMD how we
+want that system to behave. We do this by creating a <em>potential</em>
+that acts on a <em>neighbor list</em> of particles, defining the
+potential energy of interactions between each pair of particles therein.
+Finally, we feed these rules to an <em>integrator</em>, which uses our
+energy functions to calculate forces for each particle, and then
+propagate their motion at each step forward in time. The <code>dt</code>
+argument to the integrator tells it how large of a step to take each
+iteration. We also need to select one of a few integration methods,
+based on which thermodynamic ensemble we want to draw samples from,
+i.e., which thermodynamic variables are fixed. In this example, we will
+hold N, V, and T constant (the Canonical ensemble). Once that is all set
+up, we kick off motion by randomizing the initial particle velocities
+and we are ready to go!</p>
+<div class="codewrapper sourceCode" id="cb2">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Potential energy function setup</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>cell <span class="op">=</span> hoomd.md.nlist.Cell(<span class="bu">buffer</span> <span class="op">=</span> <span class="fl">0.4</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>lj_potential <span class="op">=</span> hoomd.md.pair.LJ(nlist<span class="op">=</span>cell)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>lj_potential.params[(<span class="st">'A'</span>,<span class="st">'A'</span>)] <span class="op">=</span> <span class="bu">dict</span>(epsilon<span class="op">=</span><span class="dv">1</span>,sigma<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>lj_potential.r_cut[(<span class="st">'A'</span>,<span class="st">'A'</span>)]<span class="op">=</span><span class="fl">2.5</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Integrator setup</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>integrator <span class="op">=</span> hoomd.md.Integrator(dt<span class="op">=</span><span class="fl">0.005</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>nvt <span class="op">=</span> hoomd.md.methods.NVT(kT<span class="op">=</span><span class="fl">1.5</span>,<span class="bu">filter</span><span class="op">=</span>hoomd.<span class="bu">filter</span>.All(),tau<span class="op">=</span><span class="fl">1.</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Now we tell the integrator about the forces and how to use them</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>integrator.forces.append(lj_potential)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>integrator.methods.append(nvt)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Give the integrator to our simulation</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>sim.operations.integrator <span class="op">=</span> integrator</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Finally, we start our particles moving at random velocities</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>sim.state.thermalize_particle_momenta(<span class="bu">filter</span><span class="op">=</span>hoomd.<span class="bu">filter</span>.All(), kT<span class="op">=</span><span class="fl">1.5</span>)</span></code></pre>
+</div>
+</div>
+<div class="section level3">
+<h3 id="running-the-simulation">Running the Simulation<a class="anchor" aria-label="anchor" href="#running-the-simulation"></a>
+</h3>
+<p>Now that we have set up all the pieces, all that is left is to run
+the simulation!</p>
+<div class="codewrapper sourceCode" id="cb3">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the simulation for 10,000 steps</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>sim.run(<span class="fl">1e4</span>)</span></code></pre>
+</div>
+</div>
+<div class="section level3">
+<h3 id="visualizing-the-outcome">Visualizing the Outcome<a class="anchor" aria-label="anchor" href="#visualizing-the-outcome"></a>
+</h3>
+<p>Once we are done running our simulation, we can look at the final
+configuration.</p>
+<div class="codewrapper sourceCode" id="cb4">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> mbuild</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>hoomd.write.GSD.write(state<span class="op">=</span>sim.state, filename<span class="op">=</span><span class="st">'final.gsd'</span>, mode<span class="op">=</span><span class="st">'wb'</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>final <span class="op">=</span> mbuild.load(<span class="st">'final.gsd'</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>view <span class="op">=</span> final.visualize()</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>view.setStyle({<span class="st">'sphere'</span>: {<span class="st">'scale'</span>: <span class="fl">3.</span>, <span class="st">'colorscheme'</span>: {<span class="st">'A'</span>: <span class="st">'red'</span>}}})</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>view.addBox({<span class="st">'center'</span>: {<span class="st">'x'</span>: <span class="dv">0</span>, <span class="st">'y'</span>: <span class="dv">0</span>, <span class="st">'z'</span>: <span class="dv">0</span>},</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>             <span class="st">'dimensions'</span>: {<span class="st">'w'</span>: <span class="dv">10</span> <span class="op">*</span> final.box.Lx, <span class="st">'h'</span>: <span class="dv">10</span> <span class="op">*</span> final.box.Ly, <span class="st">'d'</span>: <span class="dv">10</span> <span class="op">*</span> final.box.Lz},</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>             <span class="st">'color'</span>: <span class="st">'gray'</span>,</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>             <span class="st">'opacity'</span>: <span class="fl">0.6</span>}</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>            )</span></code></pre>
+</div>
+<figure><img src="../fig/final_lj_frame.png" title="Final frame of a Lennard-Jones simulation" alt="Final frame  of a Lennard-Jones simulation, showing particles in a simulation box." class="figure mx-auto d-block"><figcaption>Final frame of a Lennard-Jones simulation</figcaption></figure><div id="keypoints1" class="callout keypoints">
 <div class="callout-square">
 <i class="callout-icon" data-feather="key"></i>
 </div>
@@ -369,6 +453,7 @@ created for us</li>
 Place links that you need to refer to multiple times across pages here. Delete
 any links that you are not going to use. 
  -->
+</div>
 </section></section><section id="aio-lj2"><p>Content from <a href="lj2.html">Logging and analysis basics</a></p>
 <hr>
 <p> Last updated on 2023-03-14 | 
@@ -408,31 +493,150 @@ any links that you are not going to use.
 <section id="plans"><h2 class="section-heading">Plans<a class="anchor" aria-label="anchor" href="#plans"></a>
 </h2>
 <hr class="half-width">
-<p>OK, now that we’ve run our first simulations, let’s add in a bit more
-complexity.</p>
+<p>OK, now that we have run our first simulations, let us add in a bit
+more complexity.</p>
 <p>Last time we did this:</p>
+<ol style="list-style-type: decimal">
+<li>Turn on hoomd-blue, a simulation engine that works nicely in
+python</li>
+<li>Load in a configuration of randomly-packed spheres that has been
+created for us</li>
+<li>Define Lennard-Jones interaction rules and an NVT ensemble</li>
+<li>Step forward 10000 steps</li>
+<li>Visualize the last snapshot</li>
+</ol>
+<p>This time we are going to:</p>
+<ol style="list-style-type: decimal">
+<li>Turn on hoomd-blue</li>
+<li>Load in a configuration of randomly-packed spheres that has been
+created for us</li>
+<li>Define Lennard-Jones interaction rules and an NVT ensemble</li>
+<li>NEW: Set up a logger that will save simulation information we can
+use</li>
+<li>Step forward 10000 steps</li>
+<li>NEW: Plot kinetic temperature</li>
+</ol>
+<p>We will start with the same process we did last time, loading up a
+system and setting up the simulation.</p>
 <div class="codewrapper sourceCode" id="cb1">
-<h3 class="code-label">SH<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
 </h3>
-<pre class="sourceCode sh" tabindex="0"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Turn</span> on hoomd-blue, a simulation engine that works nicely in python</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Load</span> in a configuration of randomly-packed spheres that has been created for us</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Define</span> Lennard-Jones interaction rules and an NVT ensemble</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="ex">Bonus:</span> We<span class="st">'re going to set the initial velocities, too</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="st">Step forward 10000 steps.</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="st">Visualize the last snapshot.</span></span></code></pre>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> hoomd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> gsd.hoomd</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#This is steps 1-3 from before</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Attach to CPU and create simulation</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>cpu <span class="op">=</span> hoomd.device.CPU()</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>sim <span class="op">=</span> hoomd.Simulation(device<span class="op">=</span>cpu,seed<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>sim.create_state_from_gsd(filename<span class="op">=</span><span class="st">'random.gsd'</span>) <span class="co">#N and V are set here</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">#Potential and integrator setup</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>integrator <span class="op">=</span> hoomd.md.Integrator(dt<span class="op">=</span><span class="fl">0.005</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>cell <span class="op">=</span> hoomd.md.nlist.Cell(<span class="bu">buffer</span> <span class="op">=</span> <span class="fl">0.4</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>lj_potential <span class="op">=</span> hoomd.md.pair.LJ(nlist<span class="op">=</span>cell)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>lj_potential.params[(<span class="st">'A'</span>,<span class="st">'A'</span>)] <span class="op">=</span> <span class="bu">dict</span>(epsilon<span class="op">=</span><span class="dv">1</span>,sigma<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>lj_potential.r_cut[(<span class="st">'A'</span>,<span class="st">'A'</span>)]<span class="op">=</span><span class="fl">2.5</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>nvt <span class="op">=</span> hoomd.md.methods.NVT(kT<span class="op">=</span><span class="fl">1.5</span>,<span class="bu">filter</span><span class="op">=</span>hoomd.<span class="bu">filter</span>.All(),tau<span class="op">=</span><span class="fl">1.</span>)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>integrator.forces.append(lj_potential)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>integrator.methods.append(nvt)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>sim.operations.integrator <span class="op">=</span> integrator</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the simulation state </span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>sim.state.thermalize_particle_momenta(<span class="bu">filter</span><span class="op">=</span>hoomd.<span class="bu">filter</span>.All(), kT<span class="op">=</span><span class="fl">1.5</span>)</span></code></pre>
 </div>
-<p>This time we’re going to :</p>
+<p>Now that our system is ready to roll, let us tell HOOMD about the
+quantities we want it to keep track of for us. HOOMD-blue has a
+convenient built-in function for common thermodynamic values, and we
+will also keep track of how long the simulation has been running, in
+terms of time steps and also “wall time”, i.e. real-life seconds it
+takes the computer to run our simulation.</p>
 <div class="codewrapper sourceCode" id="cb2">
-<h3 class="code-label">SH<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
 </h3>
-<pre class="sourceCode sh" tabindex="0"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Turn</span> on hoomd-blue, a simulation engine that works nicely in python</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Load</span> in a configuration of randomly-packed spheres that has been created for us</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Define</span> Lennard-Jones interaction rules and an NVT ensemble</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="ex">Bonus:</span> We<span class="st">'re going to set the initial velocities, too</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="st">NEW: Set up a logger that will save simulation information we can use.</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="st">Step forward 10000 steps.</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="st">NEW: Visualize the last snapshot.</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="st">NEW: Plot kinetic temperature</span></span></code></pre>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#NEW logger</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># We need to define which atoms participate in logging, what is logged, and where to store that info.</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>selection <span class="op">=</span> hoomd.<span class="bu">filter</span>.All() <span class="co"># "which atoms"</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>logger <span class="op">=</span> hoomd.logging.Logger() <span class="co"># will be used for "what is logged"</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>trajfile <span class="op">=</span> <span class="st">'traj2.gsd'</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>writer <span class="op">=</span> hoomd.write.GSD(filename<span class="op">=</span>trajfile, <span class="co"># "where to store"</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                             trigger<span class="op">=</span>hoomd.trigger.Periodic(<span class="dv">100</span>), <span class="co">#when to store</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                             mode<span class="op">=</span><span class="st">'wb'</span>,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                             <span class="bu">filter</span><span class="op">=</span>selection) <span class="co">#filter=hoomd.filter.Null() to only store log</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>thermo_props <span class="op">=</span> hoomd.md.compute.ThermodynamicQuantities(<span class="bu">filter</span><span class="op">=</span>selection) <span class="co"># What to store</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>logger.add(thermo_props)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>logger.add(sim,quantities<span class="op">=</span>[<span class="st">'timestep'</span>,<span class="st">'walltime'</span>,<span class="st">'tps'</span>])</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>writer.log <span class="op">=</span> logger <span class="co">#need to tell our write which logger to use when it is logging info</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>sim.operations.computes.append(thermo_props) <span class="co">#tell our simulation to *compute* the thermo properties</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>sim.operations.writers.append(writer) <span class="co"># tell our simulation which writer(s) to use</span></span></code></pre>
+</div>
+<p>Great! Now we are all set to run and get at the logged quantities.
+Let us take a look at what we have got to work with first:</p>
+<div class="codewrapper sourceCode" id="cb3">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Run  the simulation  (a few seconds)</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>sim.run(<span class="fl">1e4</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the log to analyze properties</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>traj <span class="op">=</span> gsd.hoomd.<span class="bu">open</span>(trajfile,<span class="st">'rb'</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>traj[<span class="dv">0</span>].log <span class="co">#let us see what things we can access in the log</span></span></code></pre>
+</div>
+<p>You should get output looking something like this:</p>
+<pre><code>{'md/compute/ThermodynamicQuantities/kinetic_temperature': array([1.46157603]),
+ 'md/compute/ThermodynamicQuantities/pressure': array([0.40569009]),
+ 'md/compute/ThermodynamicQuantities/pressure_tensor': array([ 0.24328429, -0.04646473,  0.01355323,  0.38049974, -0.07764049,
+         0.59328623]),
+ 'md/compute/ThermodynamicQuantities/kinetic_energy': array([559.05283108]),
+ 'md/compute/ThermodynamicQuantities/translational_kinetic_energy': array([559.05283108]),
+ 'md/compute/ThermodynamicQuantities/rotational_kinetic_energy': array([0.]),
+ 'md/compute/ThermodynamicQuantities/potential_energy': array([-534.12313298]),
+ 'md/compute/ThermodynamicQuantities/degrees_of_freedom': array([765.]),
+ 'md/compute/ThermodynamicQuantities/translational_degrees_of_freedom': array([765.]),
+ 'md/compute/ThermodynamicQuantities/rotational_degrees_of_freedom': array([0.]),
+ 'md/compute/ThermodynamicQuantities/num_particles': array([256]),
+ 'md/compute/ThermodynamicQuantities/volume': array([753.57109477]),
+ 'Simulation/timestep': array([10100]),
+ 'Simulation/walltime': array([0.284307]),
+ 'Simulation/tps': array([348.21513364])}</code></pre>
+<p>Alright, one good sanity test for simulations is to see if our
+thermostat is behaving reasonably, that is, if our temperature
+oscillates about the chosen average value. Let us plot out our
+temperature!</p>
+<div class="codewrapper sourceCode" id="cb5">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> day1_utils <span class="im">import</span> arrays_from_gsd</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> <span class="st">'timestep'</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> <span class="st">'kinetic_temperature'</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>[xd,yd] <span class="op">=</span> arrays_from_gsd(trajfile,keys<span class="op">=</span>[x,y])</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>plt.plot(xd,yd)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>plt.xlabel(x)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>plt.ylabel(y)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre>
+</div>
+<figure><img src="../fig/temperature_plot.png" title="Plot of thermodynamic temperature over time." alt="Plot of thermodynamic temperature over time, showing oscillation about the average value of 1.5" class="figure mx-auto d-block"></figure><div id="discussion1" class="callout discussion">
+<div class="callout-square">
+<i class="callout-icon" data-feather="message-circle"></i>
+</div>
+<div class="callout-inner">
+<h3 class="callout-title">Challenge<a class="anchor" aria-label="anchor" href="#discussion1"></a>
+</h3>
+<div class="callout-content">
+<ul>
+<li>Compare kinetic temperature with setpoint temperature</li>
+<li>Check kinetic temperature right for n_dof</li>
+<li>Change NVT to NPT</li>
+<li>Vary T, P to change density</li>
+<li>Discussion of units</li>
+<li>Discussion of various file formats</li>
+</ul>
+</div>
+</div>
 </div>
 <div id="keypoints1" class="callout keypoints">
 <div class="callout-square">
@@ -443,9 +647,9 @@ complexity.</p>
 </h3>
 <div class="callout-content">
 <ul>
-<li>HOOMD simulation objects have “computes” and “writers”, and we pass
-the same thermodynamic quantities to each that we want computed and
-written.</li>
+<li>HOOMD simulation objects have “computes” and “writers”</li>
+<li>We pass the same thermodynamic quantities to each that we want
+computed and written.</li>
 </ul>
 </div>
 </div>
@@ -471,7 +675,8 @@ any links that you are not going to use.
 <div class="inner">
 <h3 class="card-title">Questions</h3>
 <ul>
-<li>TODO</li>
+<li>How can I vary thermodynamic quantities and observe the effects of
+these changes?</li>
 </ul>
 </div>
 </div>
@@ -481,7 +686,8 @@ any links that you are not going to use.
 <div class="inner bordered">
 <h3 class="card-title">Objectives</h3>
 <ul>
-<li>TODO</li>
+<li>Vary thermodynamic quantities</li>
+<li>Analyze different trajectories for differences this causes</li>
 </ul>
 </div>
 </div>
@@ -491,6 +697,177 @@ any links that you are not going to use.
 <section id="plans"><h2 class="section-heading">Plans<a class="anchor" aria-label="anchor" href="#plans"></a>
 </h2>
 <hr class="half-width">
+<p>We are ready to build on the previous example and learn how to vary
+thermodynamic parameters in HOOMD-blue and observe how these changes can
+affect the behavior of our systems.</p>
+<p>Last time we did this:</p>
+<ol style="list-style-type: decimal">
+<li>Turn on hoomd-blue, a simulation engine that works nicely in
+python</li>
+<li>Load in a configuration of randomly-packed spheres that has been
+created for us</li>
+<li>Define Lennard-Jones interaction rules and an <strong>NVT</strong>
+ensemble</li>
+<li>Set up a logger that will save simulation information we can
+use.</li>
+<li>Step forward 10000 steps.</li>
+<li>Plot kinetic temperature</li>
+</ol>
+<p>This time we are going to:</p>
+<ol style="list-style-type: decimal">
+<li>Turn on hoomd-blue, a simulation engine that works nicely in
+python</li>
+<li>Load in a configuration of randomly-packed spheres that has been
+created for us</li>
+<li>Define Lennard-Jones interaction rules and an <strong>NPT</strong>
+ensemble
+<ol style="list-style-type: lower-alpha">
+<li>We are going to vary the integrator parameters and evaluate
+thermodynamic observables</li>
+</ol>
+</li>
+<li>Set up a logger that will save simulation information we can
+use.</li>
+<li>Step forward 10,0000 steps.</li>
+<li>Analyze output</li>
+</ol>
+<p>Just like before, first we need to grab our tools:</p>
+<div class="codewrapper sourceCode" id="cb1">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> hoomd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> gsd.hoomd</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> day1_utils <span class="im">import</span> arrays_from_gsd</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span></code></pre>
+</div>
+<p>The simulation setup works the same as before, but this time we are
+specifying a T and P combination. This also requires us to use the NPT
+integration scheme, as opposed to NVT before. Once we create and specify
+the NPT object, telling the integrator about it is exactly the same,
+too.</p>
+<div class="codewrapper sourceCode" id="cb2">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#This is steps 1-3 from before</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Attach to CPU and create simulation</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>cpu <span class="op">=</span> hoomd.device.CPU()</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>sim <span class="op">=</span> hoomd.Simulation(device<span class="op">=</span>cpu,seed<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>sim.create_state_from_gsd(filename<span class="op">=</span><span class="st">'random.gsd'</span>) <span class="co">#N and V are set here</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">#Potential and integrator setup</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>integrator <span class="op">=</span> hoomd.md.Integrator(dt<span class="op">=</span><span class="fl">0.005</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>cell <span class="op">=</span> hoomd.md.nlist.Cell(<span class="bu">buffer</span> <span class="op">=</span> <span class="fl">0.4</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>lj_potential <span class="op">=</span> hoomd.md.pair.LJ(nlist<span class="op">=</span>cell)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>lj_potential.params[(<span class="st">'A'</span>,<span class="st">'A'</span>)] <span class="op">=</span> <span class="bu">dict</span>(epsilon<span class="op">=</span><span class="dv">1</span>,sigma<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>lj_potential.r_cut[(<span class="st">'A'</span>,<span class="st">'A'</span>)]<span class="op">=</span><span class="fl">2.5</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>T,P <span class="op">=</span> <span class="fl">1.5</span>, <span class="fl">3.0</span> <span class="co">#NEW</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>ensemble <span class="op">=</span> hoomd.md.methods.NPT(kT<span class="op">=</span>T,<span class="bu">filter</span><span class="op">=</span>hoomd.<span class="bu">filter</span>.All(),tau<span class="op">=</span><span class="fl">.1</span>, tauS<span class="op">=</span><span class="fl">0.1</span>, S<span class="op">=</span>P, couple <span class="op">=</span> <span class="st">'xyz'</span>) <span class="co">#NEW</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>integrator.forces.append(lj_potential)</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>integrator.methods.append(ensemble)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>sim.operations.integrator <span class="op">=</span> integrator</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the simulation state </span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>sim.state.thermalize_particle_momenta(<span class="bu">filter</span><span class="op">=</span>hoomd.<span class="bu">filter</span>.All(), kT<span class="op">=</span><span class="fl">1.5</span>)</span></code></pre>
+</div>
+<p>Alright, with that difference sorted, now we can set up our logger
+again.</p>
+<div class="codewrapper sourceCode" id="cb3">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># We need to define which atoms participate in logging, what is logged, and where to store that info.</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>selection <span class="op">=</span> hoomd.<span class="bu">filter</span>.All() <span class="co"># "which atoms"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>logger <span class="op">=</span> hoomd.logging.Logger() <span class="co"># will be used for "what is logged"</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>trajfile <span class="op">=</span> <span class="st">'traj3.gsd'</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>writer <span class="op">=</span> hoomd.write.GSD(filename<span class="op">=</span>trajfile, <span class="co"># "where to store"</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                             trigger<span class="op">=</span>hoomd.trigger.Periodic(<span class="dv">100</span>), <span class="co">#when to store</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>                             mode<span class="op">=</span><span class="st">'wb'</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>                             <span class="bu">filter</span><span class="op">=</span>selection) <span class="co">#filter=hoomd.filter.Null() to only store log</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>thermo_props <span class="op">=</span> hoomd.md.compute.ThermodynamicQuantities(<span class="bu">filter</span><span class="op">=</span>selection) <span class="co"># What to store</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>logger.add(thermo_props)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>logger.add(sim,quantities<span class="op">=</span>[<span class="st">'timestep'</span>,<span class="st">'walltime'</span>,<span class="st">'tps'</span>])</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>writer.log <span class="op">=</span> logger <span class="co">#need to tell our write which logger to use when it is logging info</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>sim.operations.computes.append(thermo_props) <span class="co">#tell our simulation to *compute* the thermo properties</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>sim.operations.writers.append(writer) <span class="co"># tell our simulation which writer(s) to use</span></span></code></pre>
+</div>
+<p>Now we call run again and we can open up the log to check out some
+properties.</p>
+<div class="codewrapper sourceCode" id="cb4">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run  the simulation  (a few seconds)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>sim.run(<span class="fl">1e5</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the log to analyze properties</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>traj <span class="op">=</span> gsd.hoomd.<span class="bu">open</span>(trajfile,<span class="st">'rb'</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>traj[<span class="dv">0</span>].log <span class="co">#let us see what things we can access in the log</span></span></code></pre>
+</div>
+<pre><code>{'md/compute/ThermodynamicQuantities/kinetic_temperature': array([1.35531094]),
+ 'md/compute/ThermodynamicQuantities/pressure': array([5.48293575]),
+ 'md/compute/ThermodynamicQuantities/pressure_tensor': array([ 6.16431824, -0.0800075 ,  0.15555493,  5.66618896,  0.29488547,
+         4.61830004]),
+ 'md/compute/ThermodynamicQuantities/kinetic_energy': array([518.40643306]),
+ 'md/compute/ThermodynamicQuantities/translational_kinetic_energy': array([518.40643306]),
+ 'md/compute/ThermodynamicQuantities/rotational_kinetic_energy': array([0.]),
+ 'md/compute/ThermodynamicQuantities/potential_energy': array([-1130.50699638]),
+ 'md/compute/ThermodynamicQuantities/degrees_of_freedom': array([765.]),
+ 'md/compute/ThermodynamicQuantities/translational_degrees_of_freedom': array([765.]),
+ 'md/compute/ThermodynamicQuantities/rotational_degrees_of_freedom': array([0.]),
+ 'md/compute/ThermodynamicQuantities/num_particles': array([256]),
+ 'md/compute/ThermodynamicQuantities/volume': array([318.64920867]),
+ 'Simulation/timestep': array([10100]),
+ 'Simulation/walltime': array([0.321906]),
+ 'Simulation/tps': array([307.54319584])}</code></pre>
+<p>Great! Since we ran in the NPT ensemble, the simulation box size is
+allowed to vary in order to maintain the target pressure value on
+average. Here we will plot what that looks like:</p>
+<div class="codewrapper sourceCode" id="cb6">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> <span class="st">'timestep'</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> <span class="st">'volume'</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>[xd,yd] <span class="op">=</span> arrays_from_gsd(trajfile,keys<span class="op">=</span>[x,y])</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>plt.plot(xd,yd)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>plt.xlabel(x)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>plt.ylabel(y)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre>
+</div>
+<figure><img src="../fig/volume_plot.png" title="Plot of system volume over time." alt="Plot of our simulation box volume over time, showing oscillation around the average value of about 340." class="figure mx-auto d-block"></figure><p>Now, while we lack direct access to the value of the system density
+at each time step, we can still calculate it, since we know N and V at
+each step. Here is how a plot of density looks:</p>
+<div class="codewrapper sourceCode" id="cb7">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calc_density(filename):</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> gsd.hoomd.<span class="bu">open</span>(filename,<span class="st">'rb'</span>) <span class="im">as</span> traj:</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        N <span class="op">=</span> <span class="bu">len</span>(traj[<span class="dv">0</span>].particles.position)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        step <span class="op">=</span> []</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        vol <span class="op">=</span> []</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> frame <span class="kw">in</span> traj:</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>                step.append(frame.configuration.step)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>                vol.append(frame.log[<span class="st">'md/compute/ThermodynamicQuantities/volume'</span>][<span class="dv">0</span>])</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> numpy.array(step), numpy.array(vol)<span class="op">/</span>N </span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>step, density <span class="op">=</span> calc_density(trajfile)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>plt.plot(step,density)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"timestep"</span>)</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"density"</span>)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre>
+</div>
+<figure><img src="../fig/density_plot.png" title="Plot of system density over time." alt="Plot of the density of our simulation over time, showing oscillation around the average value of about 1.32" class="figure mx-auto d-block"></figure><p>If our density fluctuates too greatly, we know something unexpected
+is happening, like the integration scheme failing. If that is the case,
+we cannot trust that any analysis from this trajectory is meaningful, so
+it is always a good idea to check. Here we can check the magnitude of
+density fluctuations with the standard deviation:</p>
+<div class="codewrapper sourceCode" id="cb8">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(T, P, density.mean(), density.std())</span></code></pre>
+</div>
+<pre><code>1.5 3.0 1.32202089047001 0.02347698751080215</code></pre>
 <div id="keypoints1" class="callout keypoints">
 <div class="callout-square">
 <i class="callout-icon" data-feather="key"></i>
@@ -499,8 +876,14 @@ any links that you are not going to use.
 <h3 class="callout-title">Keypoints<a class="anchor" aria-label="anchor" href="#keypoints1"></a>
 </h3>
 <div class="callout-content">
-<ul><li>
-</li></ul>
+<ul>
+<li>With HOOMD we can quickly vary different parameters of a
+simulation</li>
+<li>We can use python functions to calculate and plot thermodynamic
+derived quantities not directly measured in HOOMD.</li>
+<li>Verifying that our integration scheme worked as expected is a good
+practice to avoid sinking time analyzing bogus data.</li>
+</ul>
 </div>
 </div>
 </div>
@@ -525,7 +908,8 @@ any links that you are not going to use.
 <div class="inner">
 <h3 class="card-title">Questions</h3>
 <ul>
-<li>TODO</li>
+<li>How can I check on the computational performance of my
+simulations?</li>
 </ul>
 </div>
 </div>
@@ -535,7 +919,11 @@ any links that you are not going to use.
 <div class="inner bordered">
 <h3 class="card-title">Objectives</h3>
 <ul>
-<li>Determine how many timesteps per second a simulation is getting</li>
+<li>Find the average timesteps per second (TPS) of a HOOMD
+simulation</li>
+<li>Find the total walltime of a HOOMD simulation</li>
+<li>Compare these performance metrics across several simulations of
+varying sizes</li>
 </ul>
 </div>
 </div>
@@ -545,6 +933,124 @@ any links that you are not going to use.
 <section id="plans"><h2 class="section-heading">Plans<a class="anchor" aria-label="anchor" href="#plans"></a>
 </h2>
 <hr class="half-width">
+<p>Now that we have learned how to set up and run individual HOOMD-blue
+simulations, we can take a moment to investigate how this type of
+simulation scales with size. How much longer does a simulation take when
+we double the number of particles? First, we set up our simulation just
+as we did before.</p>
+<div class="codewrapper sourceCode" id="cb1">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> hoomd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> gsd.hoomd</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> itertools</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_density(filename):</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> gsd.hoomd.<span class="bu">open</span>(filename,<span class="st">'rb'</span>) <span class="im">as</span> traj:</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        N <span class="op">=</span> <span class="bu">len</span>(traj[<span class="dv">0</span>].particles.position)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        step <span class="op">=</span> []</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>        vol <span class="op">=</span> []</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> frame <span class="kw">in</span> traj:</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>                step.append(frame.configuration.step)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>                vol.append(frame.log[<span class="st">'md/compute/ThermodynamicQuantities/volume'</span>][<span class="dv">0</span>])</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> np.array(step), np.array(vol)<span class="op">/</span>N </span></code></pre>
+</div>
+<div class="codewrapper sourceCode" id="cb2">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># key variables</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> <span class="dv">4</span> <span class="co">#increase for more atoms</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>N_particles <span class="op">=</span> <span class="dv">4</span> <span class="op">*</span> m<span class="op">**</span><span class="dv">3</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>Temperature <span class="op">=</span> <span class="fl">0.5</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>tau <span class="op">=</span> <span class="fl">0.1</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>Pressure <span class="op">=</span> <span class="fl">3.2</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>tauS <span class="op">=</span> <span class="fl">0.1</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>trajfile <span class="op">=</span> <span class="st">'npt.gsd'</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>write_period <span class="op">=</span> <span class="fl">1e5</span> </span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>maxtime <span class="op">=</span> <span class="fl">5e6</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># This is steps 1-3 from before</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Attach to CPU and create simulation</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>cpu <span class="op">=</span> hoomd.device.CPU()</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>sim <span class="op">=</span> hoomd.Simulation(device<span class="op">=</span>cpu,seed<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co">#let's add some system initialization here:</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co">#initial condition setup with snapshots</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>spacing <span class="op">=</span> <span class="fl">1.3</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>K <span class="op">=</span> math.ceil(N_particles<span class="op">**</span>(<span class="dv">1</span> <span class="op">/</span> <span class="dv">3</span>))</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>L <span class="op">=</span> K <span class="op">*</span> spacing</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> numpy.linspace(<span class="op">-</span>L <span class="op">/</span> <span class="dv">2</span>, L <span class="op">/</span> <span class="dv">2</span>, K, endpoint<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>position <span class="op">=</span> <span class="bu">list</span>(itertools.product(x, repeat<span class="op">=</span><span class="dv">3</span>))</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>snapshot <span class="op">=</span> gsd.hoomd.Snapshot()</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>snapshot.particles.N <span class="op">=</span> N_particles</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>snapshot.particles.position <span class="op">=</span> position[<span class="dv">0</span>:N_particles]</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>snapshot.particles.typeid <span class="op">=</span> [<span class="dv">0</span>] <span class="op">*</span> N_particles</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>snapshot.configuration.box <span class="op">=</span> [L, L, L, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>]</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>snapshot.particles.types <span class="op">=</span> [<span class="st">'C'</span>]</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>sim.create_state_from_snapshot(snapshot) <span class="co">#may need debugging</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="co">#Potential and integrator setup</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>integrator <span class="op">=</span> hoomd.md.Integrator(dt<span class="op">=</span><span class="fl">0.005</span>)</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>cell <span class="op">=</span> hoomd.md.nlist.Cell(<span class="bu">buffer</span> <span class="op">=</span> <span class="fl">0.4</span>)</span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>lj_potential <span class="op">=</span> hoomd.md.pair.LJ(nlist<span class="op">=</span>cell)</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>lj_potential.params[(<span class="st">'C'</span>,<span class="st">'C'</span>)] <span class="op">=</span> <span class="bu">dict</span>(epsilon<span class="op">=</span><span class="dv">1</span>,sigma<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>lj_potential.r_cut[(<span class="st">'C'</span>,<span class="st">'C'</span>)]<span class="op">=</span><span class="fl">2.5</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>ensemble <span class="op">=</span> hoomd.md.methods.NPT(kT<span class="op">=</span>Temperature,<span class="bu">filter</span><span class="op">=</span>hoomd.<span class="bu">filter</span>.All(),tau<span class="op">=</span>tau, tauS<span class="op">=</span>tauS, S<span class="op">=</span>Pressure, couple <span class="op">=</span> <span class="st">'xyz'</span>) <span class="co">#NEW</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>integrator.forces.append(lj_potential)</span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>integrator.methods.append(ensemble)</span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>sim.operations.integrator <span class="op">=</span> integrator</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the simulation state </span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>sim.state.thermalize_particle_momenta(<span class="bu">filter</span><span class="op">=</span>hoomd.<span class="bu">filter</span>.All(), kT<span class="op">=</span>Temperature)</span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a><span class="co"># We need to define which atoms participate in logging, what's logged, and where to store that info.</span></span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>selection <span class="op">=</span> hoomd.<span class="bu">filter</span>.All() <span class="co"># "which atoms"</span></span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>logger <span class="op">=</span> hoomd.logging.Logger() <span class="co"># will be used for "what's logged"</span></span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>writer <span class="op">=</span> hoomd.write.GSD(filename<span class="op">=</span>trajfile, <span class="co"># "where to store"</span></span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>                             trigger<span class="op">=</span>hoomd.trigger.Periodic(<span class="bu">int</span>(write_period)), <span class="co">#when to store</span></span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>                             mode<span class="op">=</span><span class="st">'wb'</span>,</span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>                             <span class="bu">filter</span><span class="op">=</span>selection) <span class="co">#filter=hoomd.filter.Null() to only store log</span></span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>thermo_props <span class="op">=</span> hoomd.md.compute.ThermodynamicQuantities(<span class="bu">filter</span><span class="op">=</span>selection) <span class="co"># What to store</span></span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a>logger.add(thermo_props)</span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>logger.add(sim,quantities<span class="op">=</span>[<span class="st">'timestep'</span>,<span class="st">'walltime'</span>,<span class="st">'tps'</span>])</span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>writer.log <span class="op">=</span> logger <span class="co">#need to tell our write which logger to use when it's logging info</span></span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>sim.operations.computes.append(thermo_props) <span class="co">#tell our simulation to *compute* the thermo properties</span></span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a>sim.operations.writers.append(writer) <span class="co"># tell our simulation which writer(s) to use</span></span>
+<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a></span></code></pre>
+</div>
+<p>Okay, now we are ready to check on the time scaling with respect to
+system size. We will measure this by running several simulations and
+plotting the wall time and TPS vs N.</p>
+<div class="codewrapper sourceCode" id="cb3">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">TODO</span><span class="co">: write this function, do these plots</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>TPS_arr, walltime_arr <span class="op">=</span> [], []</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>M_vals <span class="op">=</span> <span class="bu">list</span>(<span class="bu">range</span>(<span class="dv">4</span>, <span class="dv">40</span>, <span class="dv">4</span>))</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> M <span class="kw">in</span> M_vals:</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    TPS, walltime <span class="op">=</span> do_simulation(M)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    TPS_arr.append(TPS)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    walltime_arr.append(walltime)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>plt.figure()</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>plt.plot(TPS_arr, M_vals, label<span class="op">=</span><span class="st">'TPS'</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'M'</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'TPS'</span>)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>plt.figure()</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>plt.plot(walltime_arr, M_vals, label<span class="op">=</span><span class="st">'Walltime'</span>)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'M'</span>)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Walltime'</span>)</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre>
+</div>
 <div id="keypoints1" class="callout keypoints">
 <div class="callout-square">
 <i class="callout-icon" data-feather="key"></i>
@@ -612,7 +1118,7 @@ any links that you are not going to use.
   "creativeWorkStatus": "active",
   "url": "https://icomse.github.io/mcmd/instructor/aio.html",
   "identifier": "https://icomse.github.io/mcmd/instructor/aio.html",
-  "dateCreated": "2022-12-23",
+  "dateCreated": "2023-03-14",
   "dateModified": "2023-03-14",
   "datePublished": "2023-03-14"
 }
