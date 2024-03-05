@@ -312,12 +312,12 @@ with the steps to launch a simulation.</p>
 <div class="codewrapper sourceCode" id="cb1">
 <h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
 </h3>
-<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> hoomd</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Attach to CPU and create simulation</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>cpu <span class="op">=</span> hoomd.device.CPU()</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>sim <span class="op">=</span> hoomd.Simulation(device<span class="op">=</span>cpu, seed<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>sim.create_state_from_gsd(filename<span class="op">=</span><span class="st">'random.gsd'</span>) <span class="co"># N and V are set here</span></span></code></pre>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="im">import</span> hoomd</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co"># Attach to CPU and create simulation</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>cpu <span class="op">=</span> hoomd.device.CPU()</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>sim <span class="op">=</span> hoomd.Simulation(device<span class="op">=</span>cpu, seed<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>sim.create_state_from_gsd(filename<span class="op">=</span><span class="st">'random.gsd'</span>) <span class="co"># N and V are set here</span></span></code></pre>
 </div>
 </div>
 <div class="section level3">
@@ -339,23 +339,23 @@ and we are ready to go!</p>
 <div class="codewrapper sourceCode" id="cb2">
 <h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
 </h3>
-<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Potential energy function setup</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>cell <span class="op">=</span> hoomd.md.nlist.Cell(<span class="bu">buffer</span> <span class="op">=</span> <span class="fl">0.4</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>lj_potential <span class="op">=</span> hoomd.md.pair.LJ(nlist<span class="op">=</span>cell)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>lj_potential.params[(<span class="st">'A'</span>,<span class="st">'A'</span>)] <span class="op">=</span> <span class="bu">dict</span>(epsilon<span class="op">=</span><span class="dv">1</span>,sigma<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>lj_potential.r_cut[(<span class="st">'A'</span>,<span class="st">'A'</span>)]<span class="op">=</span><span class="fl">2.5</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Integrator setup</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>integrator <span class="op">=</span> hoomd.md.Integrator(dt<span class="op">=</span><span class="fl">0.005</span>)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>nvt <span class="op">=</span> hoomd.md.methods.NVT(kT<span class="op">=</span><span class="fl">1.5</span>,<span class="bu">filter</span><span class="op">=</span>hoomd.<span class="bu">filter</span>.All(),tau<span class="op">=</span><span class="fl">1.</span>)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Now we tell the integrator about the forces and how to use them</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>integrator.forces.append(lj_potential)</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>integrator.methods.append(nvt)</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Give the integrator to our simulation</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>sim.operations.integrator <span class="op">=</span> integrator</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Finally, we start our particles moving at random velocities</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>sim.state.thermalize_particle_momenta(<span class="bu">filter</span><span class="op">=</span>hoomd.<span class="bu">filter</span>.All(), kT<span class="op">=</span><span class="fl">1.5</span>)</span></code></pre>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Potential energy function setup</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>cell <span class="op">=</span> hoomd.md.nlist.Cell(<span class="bu">buffer</span> <span class="op">=</span> <span class="fl">0.4</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>lj_potential <span class="op">=</span> hoomd.md.pair.LJ(nlist<span class="op">=</span>cell)</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>lj_potential.params[(<span class="st">'A'</span>,<span class="st">'A'</span>)] <span class="op">=</span> <span class="bu">dict</span>(epsilon<span class="op">=</span><span class="dv">1</span>,sigma<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>lj_potential.r_cut[(<span class="st">'A'</span>,<span class="st">'A'</span>)]<span class="op">=</span><span class="fl">2.5</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co"># Integrator setup</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>integrator <span class="op">=</span> hoomd.md.Integrator(dt<span class="op">=</span><span class="fl">0.005</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>nvt <span class="op">=</span> hoomd.md.methods.NVT(kT<span class="op">=</span><span class="fl">1.5</span>,<span class="bu">filter</span><span class="op">=</span>hoomd.<span class="bu">filter</span>.All(),tau<span class="op">=</span><span class="fl">1.</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="co"># Now we tell the integrator about the forces and how to use them</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>integrator.forces.append(lj_potential)</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>integrator.methods.append(nvt)</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="co"># Give the integrator to our simulation</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>sim.operations.integrator <span class="op">=</span> integrator</span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="co"># Finally, we start our particles moving at random velocities</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a>sim.state.thermalize_particle_momenta(<span class="bu">filter</span><span class="op">=</span>hoomd.<span class="bu">filter</span>.All(), kT<span class="op">=</span><span class="fl">1.5</span>)</span></code></pre>
 </div>
 </div>
 <div class="section level3">
@@ -365,8 +365,8 @@ the simulation!</p>
 <div class="codewrapper sourceCode" id="cb3">
 <h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
 </h3>
-<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the simulation for 10,000 steps</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>sim.run(<span class="fl">1e4</span>)</span></code></pre>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Run the simulation for 10,000 steps</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>sim.run(<span class="fl">1e4</span>)</span></code></pre>
 </div>
 </div>
 <div class="section level3">
@@ -376,19 +376,20 @@ configuration.</p>
 <div class="codewrapper sourceCode" id="cb4">
 <h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
 </h3>
-<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> mbuild</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>hoomd.write.GSD.write(state<span class="op">=</span>sim.state, filename<span class="op">=</span><span class="st">'final.gsd'</span>, mode<span class="op">=</span><span class="st">'wb'</span>)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>final <span class="op">=</span> mbuild.load(<span class="st">'final.gsd'</span>)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>view <span class="op">=</span> final.visualize()</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>view.setStyle({<span class="st">'sphere'</span>: {<span class="st">'scale'</span>: <span class="fl">3.</span>, <span class="st">'colorscheme'</span>: {<span class="st">'A'</span>: <span class="st">'red'</span>}}})</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>view.addBox({<span class="st">'center'</span>: {<span class="st">'x'</span>: <span class="dv">0</span>, <span class="st">'y'</span>: <span class="dv">0</span>, <span class="st">'z'</span>: <span class="dv">0</span>},</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>             <span class="st">'dimensions'</span>: {<span class="st">'w'</span>: <span class="dv">10</span> <span class="op">*</span> final.box.Lx, <span class="st">'h'</span>: <span class="dv">10</span> <span class="op">*</span> final.box.Ly, <span class="st">'d'</span>: <span class="dv">10</span> <span class="op">*</span> final.box.Lz},</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>             <span class="st">'color'</span>: <span class="st">'gray'</span>,</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>             <span class="st">'opacity'</span>: <span class="fl">0.6</span>}</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>            )</span></code></pre>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="im">import</span> mbuild</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>hoomd.write.GSD.write(state<span class="op">=</span>sim.state, filename<span class="op">=</span><span class="st">'final.gsd'</span>, mode<span class="op">=</span><span class="st">'wb'</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>final <span class="op">=</span> mbuild.load(<span class="st">'final.gsd'</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>view <span class="op">=</span> final.visualize()</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>view.setStyle({<span class="st">'sphere'</span>: {<span class="st">'scale'</span>: <span class="fl">3.</span>, <span class="st">'colorscheme'</span>: {<span class="st">'A'</span>: <span class="st">'red'</span>}}})</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>view.addBox({<span class="st">'center'</span>: {<span class="st">'x'</span>: <span class="dv">0</span>, <span class="st">'y'</span>: <span class="dv">0</span>, <span class="st">'z'</span>: <span class="dv">0</span>},</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>             <span class="st">'dimensions'</span>: {<span class="st">'w'</span>: <span class="dv">10</span> <span class="op">*</span> final.box.Lx, <span class="st">'h'</span>: <span class="dv">10</span> <span class="op">*</span> final.box.Ly, <span class="st">'d'</span>: <span class="dv">10</span> <span class="op">*</span> final.box.Lz},</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>             <span class="st">'color'</span>: <span class="st">'gray'</span>,</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>             <span class="st">'opacity'</span>: <span class="fl">0.6</span>}</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>            )</span></code></pre>
 </div>
-<figure><img src="../fig/final_lj_frame.png" title="Final frame of a Lennard-Jones simulation" alt="Final frame  of a Lennard-Jones simulation, showing particles in a simulation box." class="figure mx-auto d-block"><figcaption>Final frame of a Lennard-Jones simulation</figcaption></figure><div id="keypoints1" class="callout keypoints">
+<figure><img src="../fig/final_lj_frame.png" title="Final frame of a Lennard-Jones simulation" alt="Final frame of a Lennard-Jones simulation, showing particles in a simulation box." class="figure mx-auto d-block"><div class="figcaption">Final frame of a Lennard-Jones simulation</div>
+</figure><div id="keypoints1" class="callout keypoints">
 <div class="callout-square">
 <i class="callout-icon" data-feather="key"></i>
 </div>
@@ -461,7 +462,7 @@ any links that you are not going to use.
   "identifier": "https://icomse.github.io/mcmd/instructor/lj1.html",
   "dateCreated": "2023-03-14",
   "dateModified": "2024-02-27",
-  "datePublished": "2024-02-27"
+  "datePublished": "2024-03-05"
 }
 
   </script><script>
